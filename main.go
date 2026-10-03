@@ -1,11 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
+	"github.com/GanisSayogyo/UTS_PBL_Book_Management_API_434241060/app/handler"
+	"github.com/GanisSayogyo/UTS_PBL_Book_Management_API_434241060/app/repository"
+	"github.com/GanisSayogyo/UTS_PBL_Book_Management_API_434241060/app/service"
 	"github.com/GanisSayogyo/UTS_PBL_Book_Management_API_434241060/config"
 	"github.com/GanisSayogyo/UTS_PBL_Book_Management_API_434241060/database"
+	"github.com/GanisSayogyo/UTS_PBL_Book_Management_API_434241060/route"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -18,13 +21,13 @@ func main() {
 	}
 	defer db.Close()
 
-	fmt.Println("Database connection successful")
+	userRepo := repository.NewUserRepository(db)
+	authService := service.NewAuthService(userRepo)
+	authHandler := handler.NewAuthHandler(authService)
 
 	app := fiber.New()
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Book Management API")
-	})
+	route.SetupRoutes(app, authHandler)
 
 	log.Fatal(app.Listen(":" + cfg.AppPort))
 }
