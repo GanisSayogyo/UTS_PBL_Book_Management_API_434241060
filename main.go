@@ -22,12 +22,16 @@ func main() {
 	defer db.Close()
 
 	userRepo := repository.NewUserRepository(db)
+
 	authService := service.NewAuthService(userRepo, cfg)
 	authHandler := handler.NewAuthHandler(authService)
 
+	userService := service.NewUserService(userRepo)
+	userHandler := handler.NewUserHandler(userService)
+
 	app := fiber.New()
 
-	route.SetupRoutes(app, authHandler)
+	route.SetupRoutes(app, authHandler, userHandler, cfg)
 
 	log.Fatal(app.Listen(":" + cfg.AppPort))
 }
