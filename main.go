@@ -22,7 +22,7 @@ func main() {
 	defer db.Close()
 
 	userRepo := repository.NewUserRepository(db)
-	authService := service.NewAuthService(userRepo)
+	authService := service.NewAuthService(userRepo, cfg)
 	authHandler := handler.NewAuthHandler(authService)
 
 	app := fiber.New()

@@ -48,3 +48,29 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 
 	return helper.SuccessResponse(c, fiber.StatusCreated, user)
 }
+
+func (h *AuthHandler) Login(c *fiber.Ctx) error {
+	var req model.LoginRequest
+
+	if err := c.BodyParser(&req); err != nil {
+		return helper.ErrorResponse(c, fiber.StatusBadRequest, "invalid request body")
+	}
+
+	if err := h.validator.Struct(req); err != nil {
+		return helper.ErrorResponse(c, fiber.StatusUnprocessableEntity, "validation failed")
+	}
+
+	user, token, err := h.authService.Login(c.Context(), req)
+	if err != nil {
+		if errors.Is(err, service.ErrInvalidCredentials) {
+			return helper.ErrorResponse(c, fiber.StatusUnauthorized, "invalid username or password")
+		}
+
+		return helper.ErrorResponse(c, fiber.StatusInternalServerError, "internal server error")
+	}
+
+	return helper.SuccessResponse(c, fiber.StatusOK, fiber.Map{
+		"user":  user,
+		"token": token,
+	})
+}
