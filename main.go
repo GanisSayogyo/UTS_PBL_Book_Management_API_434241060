@@ -22,16 +22,25 @@ func main() {
 	defer db.Close()
 
 	userRepo := repository.NewUserRepository(db)
+	userService := service.NewUserService(userRepo)
+	userHandler := handler.NewUserHandler(userService)
+
+	bookRepo := repository.NewBookRepository(db)
+	bookService := service.NewBookService(bookRepo)
+	bookHandler := handler.NewBookHandler(bookService)
 
 	authService := service.NewAuthService(userRepo, cfg)
 	authHandler := handler.NewAuthHandler(authService)
 
-	userService := service.NewUserService(userRepo)
-	userHandler := handler.NewUserHandler(userService)
-
 	app := fiber.New()
 
-	route.SetupRoutes(app, authHandler, userHandler, cfg)
+	route.SetupRoutes(
+		app,
+		authHandler,
+		userHandler,
+		bookHandler,
+		cfg,
+	)
 
 	log.Fatal(app.Listen(":" + cfg.AppPort))
 }
